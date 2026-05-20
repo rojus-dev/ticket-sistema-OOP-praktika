@@ -44,6 +44,13 @@ class TicketController extends Controller
         return redirect()->route('tickets.index')->with('success', 'Problema sėkmingai užregistruota.');
     }
 
+    public function show(Ticket $ticket)
+    {
+        $ticket->load(['user', 'category', 'comments.user']);
+
+        return view('tickets.show', compact('ticket'));
+    }
+
     public function edit(Ticket $ticket)
     {
         $categories = Category::all();

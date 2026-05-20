@@ -42,8 +42,12 @@
                                 <td class="p-2">{{ $ticket->status }}</td>
                                 <td class="p-2">{{ $ticket->user->name }}</td>
                                 <td class="p-2 flex gap-2">
+                                    <a href="{{ route('tickets.show', $ticket) }}"
+                                        class="bg-green-600 text-white px-3 py-1 rounded">
+                                        Peržiūrėti
+                                    </a>
                                     <a href="{{ route('tickets.edit', $ticket) }}"
-                                       class="bg-yellow-500 text-white px-3 py-1 rounded">
+                                        class="bg-yellow-500 text-white px-3 py-1 rounded">
                                         Redaguoti
                                     </a>
 
