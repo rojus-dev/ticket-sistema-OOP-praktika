@@ -41,7 +41,8 @@ class TicketController extends Controller
             'status' => 'Naujas',
         ]);
 
-        return redirect()->route('tickets.index')->with('success', 'Problema sėkmingai užregistruota.');
+        return redirect()->route('tickets.index')
+            ->with('success', 'Problema sėkmingai užregistruota.');
     }
 
     public function show(Ticket $ticket)
@@ -53,6 +54,10 @@ class TicketController extends Controller
 
     public function edit(Ticket $ticket)
     {
+        if (Auth::id() !== $ticket->user_id && !Auth::user()->isAdmin()) {
+            abort(403, 'Neturite teisės redaguoti šios problemos.');
+        }
+
         $categories = Category::all();
 
         return view('tickets.edit', compact('ticket', 'categories'));
@@ -60,6 +65,14 @@ class TicketController extends Controller
 
     public function update(Request $request, Ticket $ticket)
     {
+        if (
+            Auth::id() !== $ticket->user_id &&
+            !Auth::user()->isAdmin() &&
+            !Auth::user()->isSupport()
+        ) {
+            abort(403, 'Neturite teisės atnaujinti šios problemos.');
+        }
+
         $request->validate([
             'category_id' => 'required',
             'title' => 'required|max:255',
@@ -74,13 +87,19 @@ class TicketController extends Controller
             'status' => $request->status,
         ]);
 
-        return redirect()->route('tickets.index')->with('success', 'Problema sėkmingai atnaujinta.');
+        return redirect()->route('tickets.index')
+            ->with('success', 'Problema sėkmingai atnaujinta.');
     }
 
     public function destroy(Ticket $ticket)
     {
+        if (Auth::id() !== $ticket->user_id && !Auth::user()->isAdmin()) {
+            abort(403, 'Neturite teisės pašalinti šios problemos.');
+        }
+
         $ticket->delete();
 
-        return redirect()->route('tickets.index')->with('success', 'Problema pašalinta.');
+        return redirect()->route('tickets.index')
+            ->with('success', 'Problema pašalinta.');
     }
 }
