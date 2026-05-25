@@ -24,11 +24,18 @@
                     class="bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700">
                         Aktyvių problemų PDF
                 </a>
-                
+
                 <a href="{{ route('tickets.sendActiveReportPdf') }}"
                     class="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700">
                         Siųsti PDF el. paštu
                 </a>
+
+            @if(Auth::user()->isAdmin())
+                <a href="{{ route('categories.index') }}"
+                    class="bg-gray-700 text-white px-4 py-2 rounded hover:bg-gray-800">
+                        Kategorijos
+                </a>
+            @endif
 
             </div>
 
