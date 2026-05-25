@@ -7,6 +7,9 @@ use App\Models\Category;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Barryvdh\DomPDF\Facade\Pdf;
+use App\Mail\ActiveTicketsReportMail;
+use App\Models\Setting;
+use Illuminate\Support\Facades\Mail;
 
 class TicketController extends Controller
 {
@@ -102,6 +105,22 @@ class TicketController extends Controller
         $pdf = Pdf::loadView('tickets.active-report-pdf', compact('tickets'));
 
         return $pdf->download('aktyviu-problemu-ataskaita.pdf');
+    }
+
+    public function sendActiveReportPdf()
+    {
+        $tickets = Ticket::with(['user', 'category'])
+            ->where('status', '!=', 'Užbaigtas')
+            ->latest()
+            ->get();
+
+        $pdf = Pdf::loadView('tickets.active-report-pdf', compact('tickets'));
+
+        $email = Setting::where('key', 'report_email')->value('value');
+
+        Mail::to($email)->send(new ActiveTicketsReportMail($pdf->output()));
+
+        return redirect()->route('tickets.index')->with('success', 'PDF ataskaita išsiųsta el. paštu: ' . $email);
     }
 
     public function destroy(Ticket $ticket)

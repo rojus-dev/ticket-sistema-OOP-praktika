@@ -19,11 +19,20 @@
                    class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
                         Registruoti problemą
                 </a>
+
                 <a href="{{ route('tickets.activeReportPdf') }}"
                     class="bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700">
                         Aktyvių problemų PDF
                 </a>
+                
+                <a href="{{ route('tickets.sendActiveReportPdf') }}"
+                    class="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700">
+                        Siųsti PDF el. paštu
+                </a>
+
             </div>
+
+
 
             <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg p-6">
                 <table class="w-full border-collapse">
