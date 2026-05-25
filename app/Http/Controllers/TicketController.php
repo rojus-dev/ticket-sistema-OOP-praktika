@@ -19,7 +19,16 @@ class TicketController extends Controller
             ->latest()
             ->get();
 
-        return view('tickets.index', compact('tickets'));
+        $newCount = Ticket::where('status', 'Naujas')->count();
+        $inProgressCount = Ticket::where('status', 'Vykdomas')->count();
+        $doneCount = Ticket::where('status', 'Užbaigtas')->count();
+
+        return view('tickets.index', compact(
+            'tickets',
+            'newCount',
+            'inProgressCount',
+            'doneCount'
+        ));
     }
 
     public function create()
