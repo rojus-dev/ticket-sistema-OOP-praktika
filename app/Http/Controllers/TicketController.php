@@ -6,6 +6,7 @@ use App\Models\Ticket;
 use App\Models\Category;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class TicketController extends Controller
 {
@@ -89,6 +90,18 @@ class TicketController extends Controller
 
         return redirect()->route('tickets.index')
             ->with('success', 'Problema sėkmingai atnaujinta.');
+    }
+
+    public function activeReportPdf()
+    {
+    $tickets = Ticket::with(['user', 'category'])
+        ->where('status', '!=', 'Užbaigtas')
+        ->latest()
+        ->get();
+
+        $pdf = Pdf::loadView('tickets.active-report-pdf', compact('tickets'));
+
+        return $pdf->download('aktyviu-problemu-ataskaita.pdf');
     }
 
     public function destroy(Ticket $ticket)

@@ -17,7 +17,11 @@
             <div class="mb-4">
                 <a href="{{ route('tickets.create') }}"
                    class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
-                    Registruoti problemą
+                        Registruoti problemą
+                </a>
+                <a href="{{ route('tickets.activeReportPdf') }}"
+                    class="bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700">
+                        Aktyvių problemų PDF
                 </a>
             </div>
 
