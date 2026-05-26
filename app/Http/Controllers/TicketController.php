@@ -90,15 +90,19 @@ class TicketController extends Controller
             'category_id' => 'required',
             'title' => 'required|max:255',
             'description' => 'required',
-            'status' => 'required',
         ]);
 
-        $ticket->update([
+        $updateData = [
             'category_id' => $request->category_id,
             'title' => $request->title,
             'description' => $request->description,
-            'status' => $request->status,
-        ]);
+        ];
+
+        if (Auth::user()->isAdmin() || Auth::user()->isSupport()) {
+            $updateData['status'] = $request->status;
+        }
+
+        $ticket->update($updateData);
 
         return redirect()->route('tickets.index')
             ->with('success', 'Problema sėkmingai atnaujinta.');

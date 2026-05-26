@@ -35,6 +35,7 @@
                         @enderror
                     </div>
 
+                @if(Auth::user()->isAdmin() || Auth::user()->isSupport())
                     <div class="mb-4">
                         <label class="block mb-1">Statusas</label>
                         <select name="status" class="w-full rounded border-gray-300">
@@ -42,10 +43,8 @@
                             <option value="Vykdomas" @if($ticket->status == 'Vykdomas') selected @endif>Vykdomas</option>
                             <option value="Užbaigtas" @if($ticket->status == 'Užbaigtas') selected @endif>Užbaigtas</option>
                         </select>
-                        @error('status')
-                            <p class="text-red-600">{{ $message }}</p>
-                        @enderror
                     </div>
+                @endif
 
                     <div class="mb-4">
                         <label class="block mb-1">Aprašymas</label>
