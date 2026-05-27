@@ -22,6 +22,10 @@
                     <i class="ti ti-tag text-base"></i> Kategorijos
                 </a>
                 @endif
+                <a href="{{ route('statistics.index') }}"
+                class="inline-flex items-center gap-1.5 px-3 py-2 text-sm text-gray-600 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition">
+                    <i class="ti ti-chart-bar text-base"></i> Statistika
+                </a>
                 <a href="{{ route('tickets.create') }}"
                    class="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-white bg-emerald-600 rounded-lg hover:bg-emerald-700 transition">
                     <i class="ti ti-plus text-base"></i> Registruoti
@@ -61,11 +65,6 @@
             <p class="text-xs text-gray-500 dark:text-gray-400 mb-1">Viso</p>
             <p class="text-2xl font-semibold text-gray-700 dark:text-gray-200">{{ $tickets->count() }}</p>
         </div>
-    </div>
-
-    <div class="bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-xl mb-6 p-4">
-        <p class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">Problemų statistika</p>
-        <canvas id="ticketChart" height="70"></canvas>
     </div>
 
     <div class="bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-xl overflow-hidden">
@@ -139,33 +138,4 @@
             </tbody>
         </table>
     </div>
-
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script>
-        const isDark = document.documentElement.classList.contains('dark');
-        const textColor = isDark ? '#9ca3af' : '#6b7280';
-        const gridColor = isDark ? '#1f2937' : '#f3f4f6';
-
-        new Chart(document.getElementById('ticketChart'), {
-            type: 'bar',
-            data: {
-                labels: @json($statuses),
-                datasets: [{
-                    data: [{{ $newCount }}, {{ $inProgressCount }}, {{ $doneCount }}],
-                    backgroundColor: ['#eff6ff','#fffbeb','#ecfdf5'],
-                    borderColor: ['#3b82f6','#f59e0b','#10b981'],
-                    borderWidth: 2,
-                    borderRadius: 6,
-                }]
-            },
-            options: {
-                responsive: true,
-                plugins: { legend: { display: false } },
-                scales: {
-                    x: { grid: { color: gridColor }, ticks: { color: textColor, font: { size: 12 } } },
-                    y: { beginAtZero: true, grid: { color: gridColor }, ticks: { color: textColor, precision: 0, font: { size: 12 } } }
-                }
-            }
-        });
-    </script>
 </x-app-layout>

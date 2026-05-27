@@ -21,11 +21,9 @@ class TicketController extends Controller
         $newCount        = $tickets->where('status', 'Naujas')->count();
         $inProgressCount = $tickets->where('status', 'Vykdomas')->count();
         $doneCount       = $tickets->where('status', 'Užbaigtas')->count();
-        $statuses        = Ticket::STATUSES;
 
-        return view('tickets.index', compact('tickets', 'newCount', 'inProgressCount', 'doneCount', 'statuses'));
+        return view('tickets.index', compact('tickets', 'newCount', 'inProgressCount', 'doneCount'));
     }
-
     public function create()
     {
         $categories = Category::all();
