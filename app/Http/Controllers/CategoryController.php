@@ -4,16 +4,12 @@ namespace App\Http\Controllers;
 
 use App\Models\Category;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 
 class CategoryController extends Controller
 {
     public function index()
     {
-        if (!Auth::user()->isAdmin()) {
-            abort(403, 'Tik administratorius gali valdyti kategorijas.');
-        }
-
+        $this->authorizeAdmin();
         $categories = Category::latest()->get();
 
         return view('categories.index', compact('categories'));
@@ -21,63 +17,51 @@ class CategoryController extends Controller
 
     public function create()
     {
-        if (!Auth::user()->isAdmin()) {
-            abort(403, 'Tik administratorius gali kurti kategorijas.');
-        }
+        $this->authorizeAdmin();
 
         return view('categories.create');
     }
 
     public function store(Request $request)
     {
-        if (!Auth::user()->isAdmin()) {
-            abort(403, 'Tik administratorius gali išsaugoti kategorijas.');
-        }
+        $this->authorizeAdmin();
 
         $request->validate([
-            'name' => 'required|max:255',
+            'name' => 'required|max:255|unique:categories,name',
         ]);
 
         Category::create([
             'name' => $request->name,
         ]);
 
-        return redirect()->route('categories.index')
-            ->with('success', 'Kategorija sėkmingai pridėta.');
+        return redirect()->route('categories.index')->with('success', 'Kategorija sėkmingai pridėta.');
     }
 
     public function edit(Category $category)
     {
-        if (!Auth::user()->isAdmin()) {
-            abort(403, 'Tik administratorius gali redaguoti kategorijas.');
-        }
+        $this->authorizeAdmin();
 
         return view('categories.edit', compact('category'));
     }
 
     public function update(Request $request, Category $category)
     {
-        if (!Auth::user()->isAdmin()) {
-            abort(403, 'Tik administratorius gali atnaujinti kategorijas.');
-        }
+        $this->authorizeAdmin();
 
         $request->validate([
-            'name' => 'required|max:255',
+            'name' => 'required|max:255|unique:categories,name,' . $category->id,
         ]);
 
         $category->update([
             'name' => $request->name,
         ]);
 
-        return redirect()->route('categories.index')
-            ->with('success', 'Kategorija sėkmingai atnaujinta.');
+        return redirect()->route('categories.index')->with('success', 'Kategorija sėkmingai atnaujinta.');
     }
 
     public function destroy(Category $category)
     {
-        if (!Auth::user()->isAdmin()) {
-            abort(403, 'Tik administratorius gali šalinti kategorijas.');
-        }
+        $this->authorizeAdmin();
 
         if ($category->tickets()->count() > 0) {
             return redirect()->route('categories.index')
@@ -86,7 +70,13 @@ class CategoryController extends Controller
 
         $category->delete();
 
-        return redirect()->route('categories.index')
-            ->with('success', 'Kategorija pašalinta.');
+        return redirect()->route('categories.index')->with('success', 'Kategorija pašalinta.');
+    }
+
+    private function authorizeAdmin(): void
+    {
+        if (!auth()->user()->isAdmin()) {
+            abort(403);
+        }
     }
 }
