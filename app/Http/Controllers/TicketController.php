@@ -18,17 +18,20 @@ class TicketController extends Controller
     {
         $tickets = Ticket::with(['user', 'category'])->latest()->get();
 
-        $newCount = Ticket::where('status', 'Naujas')->count();
-        $inProgressCount = Ticket::where('status', 'Vykdomas')->count();
-        $doneCount = Ticket::where('status', 'Užbaigtas')->count();
+        $newCount        = $tickets->where('status', 'Naujas')->count();
+        $inProgressCount = $tickets->where('status', 'Vykdomas')->count();
+        $doneCount       = $tickets->where('status', 'Užbaigtas')->count();
+        $statuses        = Ticket::STATUSES;
 
-        return view('tickets.index', compact('tickets', 'newCount', 'inProgressCount', 'doneCount'));
+        return view('tickets.index', compact('tickets', 'newCount', 'inProgressCount', 'doneCount', 'statuses'));
     }
 
     public function create()
     {
         $categories = Category::all();
-        return view('tickets.create', compact('categories'));
+        $statuses   = Ticket::STATUSES;
+
+        return view('tickets.create', compact('categories', 'statuses'));
     }
 
     public function store(Request $request)
@@ -44,7 +47,7 @@ class TicketController extends Controller
             'category_id' => $request->category_id,
             'title'       => $request->title,
             'description' => $request->description,
-            'status'      => 'Naujas',
+            'status'      => Ticket::STATUSES[0],
         ]);
 
         return redirect()->route('tickets.index')->with('success', 'Problema sėkmingai užregistruota.');
@@ -53,6 +56,7 @@ class TicketController extends Controller
     public function show(Ticket $ticket)
     {
         $ticket->load(['user', 'category', 'comments.user']);
+
         return view('tickets.show', compact('ticket'));
     }
 
@@ -63,7 +67,9 @@ class TicketController extends Controller
         }
 
         $categories = Category::all();
-        return view('tickets.edit', compact('ticket', 'categories'));
+        $statuses   = Ticket::STATUSES;
+
+        return view('tickets.edit', compact('ticket', 'categories', 'statuses'));
     }
 
     public function update(Request $request, Ticket $ticket)
@@ -78,7 +84,7 @@ class TicketController extends Controller
             'description' => 'required',
         ]);
 
-        $oldStatus = $ticket->status;
+        $oldStatus    = $ticket->status;
         $statusChanged = false;
 
         $updateData = [
@@ -89,7 +95,7 @@ class TicketController extends Controller
 
         if (Auth::user()->isAdmin() || Auth::user()->isSupport()) {
             $newStatus = $request->status;
-            if ($newStatus && $newStatus !== $oldStatus) {
+            if ($newStatus && in_array($newStatus, Ticket::STATUSES) && $newStatus !== $oldStatus) {
                 $updateData['status'] = $newStatus;
                 $statusChanged = true;
             }
@@ -112,22 +118,23 @@ class TicketController extends Controller
     public function activeReportPdf()
     {
         $tickets = Ticket::with(['user', 'category'])
-            ->where('status', '!=', 'Užbaigtas')
+            ->whereIn('status', array_filter(Ticket::STATUSES, fn($s) => $s !== 'Užbaigtas'))
             ->latest()
             ->get();
 
         $pdf = Pdf::loadView('tickets.active-report-pdf', compact('tickets'));
+
         return $pdf->download('aktyviu-problemu-ataskaita.pdf');
     }
 
     public function sendActiveReportPdf()
     {
         $tickets = Ticket::with(['user', 'category'])
-            ->where('status', '!=', 'Užbaigtas')
+            ->whereIn('status', array_filter(Ticket::STATUSES, fn($s) => $s !== 'Užbaigtas'))
             ->latest()
             ->get();
 
-        $pdf = Pdf::loadView('tickets.active-report-pdf', compact('tickets'));
+        $pdf   = Pdf::loadView('tickets.active-report-pdf', compact('tickets'));
         $email = Setting::where('key', 'report_email')->value('value');
 
         if (!$email) {

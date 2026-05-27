@@ -1,149 +1,170 @@
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-            Problemų sąrašas
-        </h2>
-    </x-slot>
-
-    <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-
-            @if(session('success'))
-                <div class="mb-4 p-4 bg-green-100 text-green-800 rounded">{{ session('success') }}</div>
-            @endif
-            @if(session('error'))
-                <div class="mb-4 p-4 bg-red-100 text-red-800 rounded">{{ session('error') }}</div>
-            @endif
-
-            <div class="mb-4 flex flex-wrap gap-2">
-                <a href="{{ route('tickets.create') }}" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
-                    + Registruoti problemą
-                </a>
-                <a href="{{ route('tickets.activeReportPdf') }}" class="bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700">
-                    📄 Aktyvių problemų PDF
+        <div class="flex items-center justify-between">
+            <div>
+                <h1 class="text-lg font-semibold text-gray-900 dark:text-white">Problemų sąrašas</h1>
+                <p class="text-sm text-gray-500 dark:text-gray-400 mt-0.5">Viso {{ $tickets->count() }} problemų sistemoje</p>
+            </div>
+            <div class="flex items-center gap-2">
+                <a href="{{ route('tickets.activeReportPdf') }}"
+                   class="inline-flex items-center gap-1.5 px-3 py-2 text-sm text-gray-600 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition">
+                    <i class="ti ti-file-type-pdf text-base"></i> PDF
                 </a>
                 @if(Auth::user()->isAdmin() || Auth::user()->isSupport())
-                <a href="{{ route('tickets.sendActiveReportPdf') }}" class="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700">
-                    📧 Siųsti PDF el. paštu
+                <a href="{{ route('tickets.sendActiveReportPdf') }}"
+                   class="inline-flex items-center gap-1.5 px-3 py-2 text-sm text-gray-600 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition">
+                    <i class="ti ti-send text-base"></i> Siųsti PDF
                 </a>
                 @endif
                 @if(Auth::user()->isAdmin())
-                <a href="{{ route('categories.index') }}" class="bg-gray-700 text-white px-4 py-2 rounded hover:bg-gray-800">
-                    ⚙ Kategorijos
+                <a href="{{ route('categories.index') }}"
+                   class="inline-flex items-center gap-1.5 px-3 py-2 text-sm text-gray-600 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition">
+                    <i class="ti ti-tag text-base"></i> Kategorijos
                 </a>
                 @endif
+                <a href="{{ route('tickets.create') }}"
+                   class="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-white bg-emerald-600 rounded-lg hover:bg-emerald-700 transition">
+                    <i class="ti ti-plus text-base"></i> Registruoti
+                </a>
             </div>
-
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-                <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
-                    <p class="text-sm text-gray-500 dark:text-gray-400">Naujos problemos</p>
-                    <p class="text-3xl font-bold text-blue-600">{{ $newCount }}</p>
-                </div>
-                <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
-                    <p class="text-sm text-gray-500 dark:text-gray-400">Vykdomos problemos</p>
-                    <p class="text-3xl font-bold text-yellow-500">{{ $inProgressCount }}</p>
-                </div>
-                <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
-                    <p class="text-sm text-gray-500 dark:text-gray-400">Užbaigtos problemos</p>
-                    <p class="text-3xl font-bold text-green-600">{{ $doneCount }}</p>
-                </div>
-                <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
-                    <p class="text-sm text-gray-500 dark:text-gray-400">Viso problemų</p>
-                    <p class="text-3xl font-bold text-gray-900 dark:text-gray-100">{{ $tickets->count() }}</p>
-                </div>
-            </div>
-
-            <div class="bg-white dark:bg-gray-800 overflow-hidden shadow rounded-lg p-6 mb-6">
-                <h3 class="text-xl font-bold text-gray-900 dark:text-gray-100 mb-1">Problemų statistika pagal statusą</h3>
-                <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">Grafikas parodo kiek problemų yra kiekvienoje būsenoje.</p>
-                <canvas id="ticketChart" height="90"></canvas>
-            </div>
-
-            <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg p-6">
-                <table class="w-full border-collapse">
-                    <thead>
-                        <tr class="border-b bg-gray-50 dark:bg-gray-700">
-                            <th class="text-left p-2 text-gray-700 dark:text-gray-200">ID</th>
-                            <th class="text-left p-2 text-gray-700 dark:text-gray-200">Pavadinimas</th>
-                            <th class="text-left p-2 text-gray-700 dark:text-gray-200">Kategorija</th>
-                            <th class="text-left p-2 text-gray-700 dark:text-gray-200">Statusas</th>
-                            <th class="text-left p-2 text-gray-700 dark:text-gray-200">Sukūrė</th>
-                            <th class="text-left p-2 text-gray-700 dark:text-gray-200">Veiksmai</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @forelse($tickets as $ticket)
-                            <tr class="border-b hover:bg-gray-50 dark:hover:bg-gray-700">
-                                <td class="p-2 text-gray-700 dark:text-gray-300">{{ $ticket->id }}</td>
-                                <td class="p-2 text-gray-700 dark:text-gray-300">{{ $ticket->title }}</td>
-                                <td class="p-2 text-gray-700 dark:text-gray-300">{{ $ticket->category->name }}</td>
-                                <td class="p-2">
-                                    @php
-                                        $statusClass = match($ticket->status) {
-                                            'Naujas'    => 'bg-blue-100 text-blue-800',
-                                            'Vykdomas'  => 'bg-yellow-100 text-yellow-800',
-                                            'Užbaigtas' => 'bg-green-100 text-green-800',
-                                            default     => 'bg-gray-100 text-gray-800',
-                                        };
-                                    @endphp
-                                    <span class="px-2 py-1 rounded-full text-xs font-semibold {{ $statusClass }}">
-                                        {{ $ticket->status }}
-                                    </span>
-                                </td>
-                                <td class="p-2 text-gray-700 dark:text-gray-300">{{ $ticket->user->name }}</td>
-                                <td class="p-2 flex gap-2 flex-wrap">
-                                    <a href="{{ route('tickets.show', $ticket) }}" class="bg-green-600 text-white px-3 py-1 rounded text-sm">
-                                        Peržiūrėti
-                                    </a>
-                                    @if(Auth::id() === $ticket->user_id || Auth::user()->isAdmin() || Auth::user()->isSupport())
-                                    <a href="{{ route('tickets.edit', $ticket) }}" class="bg-yellow-500 text-white px-3 py-1 rounded text-sm">
-                                        Redaguoti
-                                    </a>
-                                    @endif
-                                    @if(Auth::id() === $ticket->user_id || Auth::user()->isAdmin())
-                                    <form action="{{ route('tickets.destroy', $ticket) }}" method="POST"
-                                          onsubmit="return confirm('Ar tikrai norite pašalinti?')">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" class="bg-red-600 text-white px-3 py-1 rounded text-sm">
-                                            Šalinti
-                                        </button>
-                                    </form>
-                                    @endif
-                                </td>
-                            </tr>
-                        @empty
-                            <tr>
-                                <td colspan="6" class="p-4 text-center text-gray-500">Problemų dar nėra.</td>
-                            </tr>
-                        @endforelse
-                    </tbody>
-                </table>
-            </div>
-
         </div>
+    </x-slot>
+
+    @if(session('success'))
+        <div class="mb-4 flex items-center gap-2 px-4 py-3 bg-emerald-50 dark:bg-emerald-900/30 border border-emerald-200 dark:border-emerald-800 rounded-lg text-emerald-700 dark:text-emerald-300 text-sm">
+            <i class="ti ti-circle-check text-base"></i>
+            {{ session('success') }}
+        </div>
+    @endif
+
+    @if(session('error'))
+        <div class="mb-4 flex items-center gap-2 px-4 py-3 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 rounded-lg text-red-700 dark:text-red-300 text-sm">
+            <i class="ti ti-alert-circle text-base"></i>
+            {{ session('error') }}
+        </div>
+    @endif
+
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
+        <div class="bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-xl p-4">
+            <p class="text-xs text-gray-500 dark:text-gray-400 mb-1">Naujos</p>
+            <p class="text-2xl font-semibold text-blue-600 dark:text-blue-400">{{ $newCount }}</p>
+        </div>
+        <div class="bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-xl p-4">
+            <p class="text-xs text-gray-500 dark:text-gray-400 mb-1">Vykdomos</p>
+            <p class="text-2xl font-semibold text-amber-600 dark:text-amber-400">{{ $inProgressCount }}</p>
+        </div>
+        <div class="bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-xl p-4">
+            <p class="text-xs text-gray-500 dark:text-gray-400 mb-1">Užbaigtos</p>
+            <p class="text-2xl font-semibold text-emerald-600 dark:text-emerald-400">{{ $doneCount }}</p>
+        </div>
+        <div class="bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-xl p-4">
+            <p class="text-xs text-gray-500 dark:text-gray-400 mb-1">Viso</p>
+            <p class="text-2xl font-semibold text-gray-700 dark:text-gray-200">{{ $tickets->count() }}</p>
+        </div>
+    </div>
+
+    <div class="bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-xl mb-6 p-4">
+        <p class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">Problemų statistika</p>
+        <canvas id="ticketChart" height="70"></canvas>
+    </div>
+
+    <div class="bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-xl overflow-hidden">
+        <table class="w-full">
+            <thead>
+                <tr class="bg-gray-50 dark:bg-gray-800/50 border-b border-gray-100 dark:border-gray-800">
+                    <th class="text-left px-4 py-3 text-xs font-medium text-gray-500 dark:text-gray-400">#</th>
+                    <th class="text-left px-4 py-3 text-xs font-medium text-gray-500 dark:text-gray-400">Pavadinimas</th>
+                    <th class="text-left px-4 py-3 text-xs font-medium text-gray-500 dark:text-gray-400">Kategorija</th>
+                    <th class="text-left px-4 py-3 text-xs font-medium text-gray-500 dark:text-gray-400">Statusas</th>
+                    <th class="text-left px-4 py-3 text-xs font-medium text-gray-500 dark:text-gray-400">Sukūrė</th>
+                    <th class="text-left px-4 py-3 text-xs font-medium text-gray-500 dark:text-gray-400">Veiksmai</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-50 dark:divide-gray-800">
+                @forelse($tickets as $ticket)
+                    <tr class="hover:bg-gray-50/50 dark:hover:bg-gray-800/30 transition">
+                        <td class="px-4 py-3 text-xs text-gray-400">{{ $ticket->id }}</td>
+                        <td class="px-4 py-3">
+                            <a href="{{ route('tickets.show', $ticket) }}"
+                               class="text-sm font-medium text-gray-900 dark:text-white hover:text-emerald-600 dark:hover:text-emerald-400 transition">
+                                {{ $ticket->title }}
+                            </a>
+                        </td>
+                        <td class="px-4 py-3">
+                            <span class="inline-flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded-md">
+                                {{ $ticket->category->name }}
+                            </span>
+                        </td>
+                        <td class="px-4 py-3">
+                                <span class="inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-full {{ $ticket->statusClass() }}">
+                                <span class="w-1.5 h-1.5 rounded-full bg-current"></span>
+                                {{ $ticket->status }}
+                            </span>
+                        </td>
+                        <td class="px-4 py-3 text-sm text-gray-500 dark:text-gray-400">{{ $ticket->user->name }}</td>
+                        <td class="px-4 py-3">
+                            <div class="flex items-center gap-1.5">
+                                <a href="{{ route('tickets.show', $ticket) }}"
+                                   class="p-1.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition" title="Peržiūrėti">
+                                    <i class="ti ti-eye text-sm"></i>
+                                </a>
+                                @if(Auth::id() === $ticket->user_id || Auth::user()->isAdmin() || Auth::user()->isSupport())
+                                <a href="{{ route('tickets.edit', $ticket) }}"
+                                   class="p-1.5 text-gray-400 hover:text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-900/30 rounded-lg transition" title="Redaguoti">
+                                    <i class="ti ti-edit text-sm"></i>
+                                </a>
+                                @endif
+                                @if(Auth::id() === $ticket->user_id || Auth::user()->isAdmin())
+                                <form action="{{ route('tickets.destroy', $ticket) }}" method="POST"
+                                      onsubmit="return confirm('Ar tikrai norite pašalinti?')">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit"
+                                            class="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition" title="Šalinti">
+                                        <i class="ti ti-trash text-sm"></i>
+                                    </button>
+                                </form>
+                                @endif
+                            </div>
+                        </td>
+                    </tr>
+                @empty
+                    <tr>
+                        <td colspan="6" class="px-4 py-12 text-center">
+                            <i class="ti ti-inbox text-3xl text-gray-300 dark:text-gray-600 block mb-2"></i>
+                            <p class="text-sm text-gray-400">Problemų dar nėra.</p>
+                        </td>
+                    </tr>
+                @endforelse
+            </tbody>
+        </table>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
-        const ctx = document.getElementById('ticketChart');
-        new Chart(ctx, {
+        const isDark = document.documentElement.classList.contains('dark');
+        const textColor = isDark ? '#9ca3af' : '#6b7280';
+        const gridColor = isDark ? '#1f2937' : '#f3f4f6';
+
+        new Chart(document.getElementById('ticketChart'), {
             type: 'bar',
             data: {
-                labels: ['Naujas', 'Vykdomas', 'Užbaigtas'],
+                labels: @json($statuses),
                 datasets: [{
-                    label: 'Problemų kiekis',
                     data: [{{ $newCount }}, {{ $inProgressCount }}, {{ $doneCount }}],
-                    backgroundColor: ['rgba(59,130,246,0.7)', 'rgba(245,158,11,0.7)', 'rgba(34,197,94,0.7)'],
-                    borderColor: ['rgba(59,130,246,1)', 'rgba(245,158,11,1)', 'rgba(34,197,94,1)'],
-                    borderWidth: 1,
-                    borderRadius: 8
+                    backgroundColor: ['#eff6ff','#fffbeb','#ecfdf5'],
+                    borderColor: ['#3b82f6','#f59e0b','#10b981'],
+                    borderWidth: 2,
+                    borderRadius: 6,
                 }]
             },
             options: {
                 responsive: true,
-                plugins: { legend: { display: true } },
-                scales: { y: { beginAtZero: true, ticks: { precision: 0 } } }
+                plugins: { legend: { display: false } },
+                scales: {
+                    x: { grid: { color: gridColor }, ticks: { color: textColor, font: { size: 12 } } },
+                    y: { beginAtZero: true, grid: { color: gridColor }, ticks: { color: textColor, precision: 0, font: { size: 12 } } }
+                }
             }
         });
     </script>
